@@ -1,0 +1,57 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install update (Centos)
+    tags: always
+    dnf:
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install update (Ubuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create simone user
+    tags: always
+    user:
+      name: simone
+      groups: root
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKK/bHvk41VlKUWpS+jglPbWPam1HHj2HL3zg2EUmw8V ansible"
+
+  - name: add sudousers files for simone
+    tags: always
+    copy:
+     src: sudoer_simone
+     dest: /etc/sudoers.d/simone
+     owner: root
+     group: root
+     mode: 0440
+#bootstrap script for fresh server, want bootstrap script to initialize server, add simone user, and 
+#adding ssh key. also simone wont need to verify with ssh key
+
+
+#optional
+#  - name: install apache pak and php packages for Ubu servers
+#    package:
+#      name:
+#        - "{{ apache_package }}"
+#        - "{{ php_package }}"
+#      state: latest
+#      update_cache: yes
